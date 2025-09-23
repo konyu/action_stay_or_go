@@ -1,17 +1,18 @@
-name: self-test
+name: stay_or_go PR check
+
 on:
-  workflow_dispatch: {}
-  push:
-    branches: [main]
+  pull_request:
 
 permissions:
   contents: read
+  # 後でPRコメントなどを足す場合は:
+  # pull-requests: write
 
 jobs:
-  run:
+  check:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout this action repo
+      - name: Checkout
         uses: actions/checkout@v5
 
       - name: Prepare dummy workdir
@@ -23,29 +24,24 @@ jobs:
           require github.com/sirupsen/logrus v1.9.0
           EOF
 
-      - name: Run local action (mode=go)
-        uses: ./
+      - name: Run stay_or_go (TSV, threshold=3000)
+        uses: konyu/action_stay_or_go@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           mode: go
-          workdir: target
-          verbose: true
-          # min_score: "70"   # ← PR で閾値テストしたいときだけ有効化
+          workdir: .
+          min_score: "3000" # ← 3000 以下ならジョブ失敗（PRのみ）
 
-      - name: Inspect workspace
+      - name: Show report head (debug)
+        if: always()
         run: |
-          echo "PWD: $(pwd)" && ls -la
-          echo "--- target ---" && ls -la target || true
-
-      - name: Verify output
-        run: |
-          test -s target/stay_or_go_report.tsv
           echo "---- HEAD ----"
-          head -n 20 target/stay_or_go_report.tsv || true
+          head -n 20 stay_or_go_report.tsv || true
           echo "--------------"
 
       - name: Upload report artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: stay_or_go_report_tsv
-          path: target/stay_or_go_report.tsv
+          path: stay_or_go_report.tsv
