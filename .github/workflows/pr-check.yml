@@ -42,5 +42,63 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: stay_or_go_report_tsv
+          name: stay_or_go_report_tsv_go
           path: stay_or_go_report.tsv
+
+  check-ruby:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Prepare Ruby Gemfile
+        run: |
+          cat > Gemfile <<'EOF'
+          source 'https://rubygems.org'
+
+          ruby '3.2.2'
+
+          gem 'rails', '~> 7.0.0'
+
+          gem "self_hosting", git: "https://github.com/uzumaki-inc/self_hosting_gem.git", tag: "v1.0.0"
+
+          gem 'webmock', '~> 7.0.0', :require => false
+
+          gem 'nokogiri', git: 'https://self_hosting_git.com/sparklemotion/nokogiri.git'
+
+          source 'https://gems.com/inside' do
+           gem 'internal-gem'
+          end
+
+          group :test do
+           gem 'rspec'
+           gem 'rubocop'
+          end
+
+          platforms :jruby do
+           gem 'jdbc-sqlite3'
+          end
+          EOF
+
+      - name: Run stay_or_go (Ruby, threshold=0)
+        uses: konyu/action_stay_or_go@v1.0.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          mode: ruby
+          workdir: .
+          min_score: "0"
+          output_path: stay_or_go_report_ruby.tsv
+
+      - name: Show Ruby report head (debug)
+        if: always()
+        run: |
+          echo "---- RUBY REPORT HEAD ----"
+          head -n 20 stay_or_go_report_ruby.tsv || true
+          echo "--------------------------"
+
+      - name: Upload Ruby report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stay_or_go_report_tsv_ruby
+          path: stay_or_go_report_ruby.tsv
