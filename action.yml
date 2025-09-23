@@ -36,7 +36,6 @@ inputs:
   min_score:
     description: "Minimum acceptable score. Action fails if any library scores below this threshold"
     required: true
-    default: "0"
 
 outputs:
   report_path:

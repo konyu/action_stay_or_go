@@ -4,11 +4,11 @@ set -euo pipefail
 # defaults
 MODE="go"
 INPUT_PATH=""
-FORMAT="markdown"
+FORMAT="tsv"
 CONFIG_PATH=""
 VERBOSE="false"
 WORKDIR="."
-OUTPUT_PATH="stay_or_go_report.md"
+OUTPUT_PATH="stay_or_go_report.tsv"
 MIN_SCORE=""
 
 # parse args --key=value
@@ -26,7 +26,7 @@ for arg in "$@"; do
 done
 
 echo "==> stay_or_go action starting"
-echo "mode=${MODE} workdir=${WORKDIR} format=${FORMAT} output=${OUTPUT_PATH}"
+echo "mode=${MODE} workdir=${WORKDIR} format=${FORMAT} output=${OUTPUT_PATH} min_score=${MIN_SCORE}"
 
 # map INPUT_GITHUB_TOKEN -> env(GITHUB_TOKEN/GH_TOKEN) and also pass as CLI flag
 TOKEN="${INPUT_GITHUB_TOKEN:-${GITHUB_TOKEN:-}}"
