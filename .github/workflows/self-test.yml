@@ -30,7 +30,7 @@ jobs:
           mode: go
           workdir: target
           verbose: true
-          # min_score: "70"   # ← PR で閾値テストしたいときだけ有効化
+          min_score: "70"
 
       - name: Inspect workspace
         run: |

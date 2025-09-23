@@ -17,8 +17,7 @@ jobs:
 
       - name: Prepare dummy workdir
         run: |
-          mkdir -p target
-          cat > target/go.mod <<'EOF'
+          cat > go.mod <<'EOF'
           module dummy
           go 1.25
           require github.com/sirupsen/logrus v1.9.0
