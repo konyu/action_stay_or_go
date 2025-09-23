@@ -4,11 +4,12 @@ set -euo pipefail
 # defaults
 MODE="go"
 INPUT_PATH=""
-FORMAT="markdown"
+FORMAT="tsv"
 CONFIG_PATH=""
 VERBOSE="false"
 WORKDIR="."
-OUTPUT_PATH="stay_or_go_report.md"
+OUTPUT_PATH="stay_or_go_report.tsv"
+MIN_SCORE=""
 
 # parse args --key=value
 for arg in "$@"; do
@@ -20,11 +21,12 @@ for arg in "$@"; do
     --verbose=*) VERBOSE="${arg#*=}";;
     --workdir=*) WORKDIR="${arg#*=}";;
     --output-path=*) OUTPUT_PATH="${arg#*=}";;
+    --min-score=*) MIN_SCORE="${arg#*=}";;
   esac
 done
 
 echo "==> stay_or_go action starting"
-echo "mode=${MODE} workdir=${WORKDIR} format=${FORMAT} output=${OUTPUT_PATH}"
+echo "mode=${MODE} workdir=${WORKDIR} format=${FORMAT} output=${OUTPUT_PATH} min_score=${MIN_SCORE}"
 
 # map INPUT_GITHUB_TOKEN -> env(GITHUB_TOKEN/GH_TOKEN) and also pass as CLI flag
 TOKEN="${INPUT_GITHUB_TOKEN:-${GITHUB_TOKEN:-}}"
@@ -70,6 +72,29 @@ if [[ ! -s "${OUTPUT_PATH}" ]]; then
   exit 1
 fi
 
-# expose output to GitHub Actions
-echo "report_path=${OUTPUT_PATH}" >> "$GITHUB_OUTPUT"
+# Check min_score if specified (only for TSV format)
+if [[ -n "${MIN_SCORE}" ]] && [[ "${FORMAT}" == "tsv" ]]; then
+  echo "==> Checking scores against minimum threshold: ${MIN_SCORE}"
+
+  # Skip header line and check Score column (9th column)
+  # Also skip lines where Skip column (10th column) is "true"
+  LOW_SCORES=$(awk -F'\t' -v min_score="${MIN_SCORE}" '
+    NR > 1 && $10 != "true" && $9 < min_score {
+      printf "%s (score: %s)\n", $1, $9
+    }
+  ' "${OUTPUT_PATH}")
+
+  if [[ -n "${LOW_SCORES}" ]]; then
+    echo "::error::The following libraries have scores below the minimum threshold (${MIN_SCORE}):"
+    echo "${LOW_SCORES}"
+    exit 1
+  else
+    echo "==> All libraries meet the minimum score threshold"
+  fi
+fi
+
+# expose output to GitHub Actions (only when running in GitHub Actions)
+if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
+  echo "report_path=${OUTPUT_PATH}" >> "$GITHUB_OUTPUT"
+fi
 echo "==> Report generated at ${OUTPUT_PATH}"

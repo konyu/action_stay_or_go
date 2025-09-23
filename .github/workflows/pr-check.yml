@@ -1,0 +1,46 @@
+name: stay_or_go PR check
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  # 後でPRコメントなどを足す場合は:
+  # pull-requests: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Prepare dummy workdir
+        run: |
+          cat > go.mod <<'EOF'
+          module dummy
+          go 1.25
+          require github.com/sirupsen/logrus v1.9.0
+          EOF
+
+      - name: Run stay_or_go (TSV, threshold=3000)
+        uses: konyu/action_stay_or_go@v1.0.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          mode: go
+          workdir: .
+          min_score: "2000" # ← 3000 以下ならジョブ失敗（PRのみ）
+
+      - name: Show report head (debug)
+        if: always()
+        run: |
+          echo "---- HEAD ----"
+          head -n 20 stay_or_go_report.tsv || true
+          echo "--------------"
+
+      - name: Upload report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stay_or_go_report_tsv
+          path: stay_or_go_report.tsv

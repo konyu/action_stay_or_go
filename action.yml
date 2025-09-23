@@ -11,7 +11,7 @@ inputs:
     required: true
   mode:
     description: "Target ecosystem: go|ruby"
-    required: false
+    required: true
     default: "go"
   input_path:
     description: "Specific file path (e.g. Gemfile). Omit to auto-detect."
@@ -29,6 +29,13 @@ inputs:
     description: "Working directory to run analysis in"
     required: false
     default: "."
+  output_path:
+    description: "Report file path (relative to current directory)"
+    required: false
+    default: "stay_or_go_report.tsv"
+  min_score:
+    description: "Minimum acceptable score. Action fails if any library scores below this threshold"
+    required: true
 
 outputs:
   report_path:
@@ -44,4 +51,5 @@ runs:
     - "--config-path=${{ inputs.config_path }}"
     - "--verbose=${{ inputs.verbose }}"
     - "--workdir=${{ inputs.workdir }}"
-    - "--output-path=stay_or_go_report.tsv"
+    - "--output-path=${{ inputs.output_path }}"
+    - "--min-score=${{ inputs.min_score }}"
