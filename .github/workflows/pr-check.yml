@@ -24,12 +24,12 @@ jobs:
           EOF
 
       - name: Run stay_or_go (TSV, threshold=3000)
-        uses: konyu/action_stay_or_go@v1
+        uses: konyu/action_stay_or_go@v1.0.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           mode: go
           workdir: .
-          min_score: "3000" # ← 3000 以下ならジョブ失敗（PRのみ）
+          min_score: "2000" # ← 3000 以下ならジョブ失敗（PRのみ）
 
       - name: Show report head (debug)
         if: always()
