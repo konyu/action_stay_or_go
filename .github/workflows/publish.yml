@@ -1,0 +1,36 @@
+name: publish
+on:
+  push:
+    tags: ["v*.*.*"] # v1.0.0 などのタグpushで発火
+
+permissions:
+  contents: read
+  packages: write # GHCR にpushするのに必要
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # （任意）.go-version を読むなら
+      - id: gover
+        run: echo "ver=$(tr -d '[:space:]' < .go-version)" >> $GITHUB_OUTPUT
+
+      - name: Build image
+        run: |
+          IMAGE=ghcr.io/konyu/action_stay_or_go:${GITHUB_REF_NAME}
+          IMAGE_MAJOR=ghcr.io/konyu/action_stay_or_go:v1
+          docker build \
+            --build-arg GO_VERSION=${{ steps.gover.outputs.ver || '1.25' }} \
+            -t "${IMAGE}" \
+            -t "${IMAGE_MAJOR}" \
+            .
+
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+
+      - name: Push
+        run: |
+          docker push ghcr.io/konyu/action_stay_or_go:${GITHUB_REF_NAME}
+          docker push ghcr.io/konyu/action_stay_or_go:v1
