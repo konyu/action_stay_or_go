@@ -1,0 +1,55 @@
+name: "stay_or_go (Docker Action)"
+description: "Run uzumaki-inc/stay_or_go and emit a dependency score report."
+author: "uzumaki-inc"
+branding:
+  icon: "check-circle"
+  color: "blue"
+
+inputs:
+  github_token:
+    description: "GitHub token used by stay_or_go (-g) or via env GITHUB_TOKEN"
+    required: true
+  mode:
+    description: "Target ecosystem: go|ruby"
+    required: false
+    default: "go"
+  input_path:
+    description: "Specific file path (e.g. Gemfile). Omit to auto-detect."
+    required: false
+    default: ""
+  format:
+    description: "Output format: markdown|csv|tsv"
+    required: false
+    default: "markdown"
+  config_path:
+    description: "Optional YAML config for weights (-c)"
+    required: false
+    default: ""
+  verbose:
+    description: "Verbose (-v)"
+    required: false
+    default: "false"
+  workdir:
+    description: "Working directory to run analysis in"
+    required: false
+    default: "."
+  output_path:
+    description: "Report file path (relative to workspace)"
+    required: false
+    default: "stay_or_go_report.md"
+
+outputs:
+  report_path:
+    description: "Path to the generated report file"
+
+runs:
+  using: "docker"
+  image: "Dockerfile"
+  args:
+    - "--mode=${{ inputs.mode }}"
+    - "--input-path=${{ inputs.input_path }}"
+    - "--format=${{ inputs.format }}"
+    - "--config-path=${{ inputs.config_path }}"
+    - "--verbose=${{ inputs.verbose }}"
+    - "--workdir=${{ inputs.workdir }}"
+    - "--output-path=${{ inputs.output_path }}"

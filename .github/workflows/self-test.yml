@@ -1,0 +1,51 @@
+name: self-test
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this action repo
+        uses: actions/checkout@v4
+
+      # テスト対象の解析ソースとして stay_or_go 本体をクローン
+      - name: Fetch target repo (stay_or_go@v0.2.0)
+        run: |
+          git clone --depth=1 --branch v0.2.0 https://github.com/uzumaki-inc/stay_or_go target
+
+      # ローカルの action を呼び出す（uses: ./）
+      - name: Run local action (mode=go)
+        uses: ./
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          mode: go
+          workdir: target
+          format: markdown
+          output_path: stay_or_go_report.md
+          verbose: true
+
+      - name: Inspect workspace
+        run: |
+          echo "PWD: $(pwd)" && ls -la
+          echo "--- target ---" && ls -la target || true
+
+      # 中間チェック: ファイル存在/非空確認 & 先頭行表示
+      - name: Verify output
+        run: |
+          test -s target/stay_or_go_report.md
+          echo "---- HEAD ----"
+          head -n 20 target/stay_or_go_report.md || true
+          echo "--------------"
+
+      # 成果物として保存
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stay_or_go_report
+          path: target/stay_or_go_report.md
