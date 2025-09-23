@@ -44,7 +44,7 @@ outputs:
 
 runs:
   using: "docker"
-  image: "Dockerfile"
+  image: "docker://ghcr.io/konyu/action_stay_or_go:v1"
   args:
     - "--mode=${{ inputs.mode }}"
     - "--input-path=${{ inputs.input_path }}"

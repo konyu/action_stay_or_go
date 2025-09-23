@@ -14,10 +14,14 @@ jobs:
       - name: Checkout this action repo
         uses: actions/checkout@v4
 
-      # テスト対象の解析ソースとして stay_or_go 本体をクローン
-      - name: Fetch target repo (stay_or_go@v0.2.0)
+      - name: Prepare dummy workdir
         run: |
-          git clone --depth=1 --branch v0.2.0 https://github.com/uzumaki-inc/stay_or_go target
+          mkdir -p target
+          cat > target/go.mod <<'EOF'
+          module dummy
+          go 1.25
+          require github.com/sirupsen/logrus v1.9.0
+          EOF
 
       # ローカルの action を呼び出す（uses: ./）
       - name: Run local action (mode=go)
