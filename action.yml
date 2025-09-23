@@ -17,10 +17,6 @@ inputs:
     description: "Specific file path (e.g. Gemfile). Omit to auto-detect."
     required: false
     default: ""
-  format:
-    description: "Output format: markdown|csv|tsv"
-    required: false
-    default: "markdown"
   config_path:
     description: "Optional YAML config for weights (-c)"
     required: false
@@ -33,10 +29,6 @@ inputs:
     description: "Working directory to run analysis in"
     required: false
     default: "."
-  output_path:
-    description: "Report file path (relative to workspace)"
-    required: false
-    default: "stay_or_go_report.md"
 
 outputs:
   report_path:
@@ -48,8 +40,8 @@ runs:
   args:
     - "--mode=${{ inputs.mode }}"
     - "--input-path=${{ inputs.input_path }}"
-    - "--format=${{ inputs.format }}"
+    - "--format=tsv"
     - "--config-path=${{ inputs.config_path }}"
     - "--verbose=${{ inputs.verbose }}"
     - "--workdir=${{ inputs.workdir }}"
-    - "--output-path=${{ inputs.output_path }}"
+    - "--output-path=stay_or_go_report.tsv"

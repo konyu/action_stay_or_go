@@ -23,33 +23,29 @@ jobs:
           require github.com/sirupsen/logrus v1.9.0
           EOF
 
-      # ローカルの action を呼び出す（uses: ./）
       - name: Run local action (mode=go)
         uses: ./
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           mode: go
           workdir: target
-          format: markdown
-          output_path: stay_or_go_report.md
           verbose: true
+          # min_score: "70"   # ← PR で閾値テストしたいときだけ有効化
 
       - name: Inspect workspace
         run: |
           echo "PWD: $(pwd)" && ls -la
           echo "--- target ---" && ls -la target || true
 
-      # 中間チェック: ファイル存在/非空確認 & 先頭行表示
       - name: Verify output
         run: |
-          test -s target/stay_or_go_report.md
+          test -s target/stay_or_go_report.tsv
           echo "---- HEAD ----"
-          head -n 20 target/stay_or_go_report.md || true
+          head -n 20 target/stay_or_go_report.tsv || true
           echo "--------------"
 
-      # 成果物として保存
       - name: Upload report artifact
         uses: actions/upload-artifact@v4
         with:
-          name: stay_or_go_report
-          path: target/stay_or_go_report.md
+          name: stay_or_go_report_tsv
+          path: target/stay_or_go_report.tsv
