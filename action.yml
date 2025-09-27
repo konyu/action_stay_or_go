@@ -12,7 +12,7 @@ inputs:
   mode:
     description: "Target ecosystem: go|ruby"
     required: true
-    default: "go"
+    default: ""
   input_path:
     description: "Specific file path (e.g. Gemfile). Omit to auto-detect."
     required: false
