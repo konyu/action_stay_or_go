@@ -72,6 +72,35 @@ if [[ ! -s "${OUTPUT_PATH}" ]]; then
   exit 1
 fi
 
+# 実行結果のtsvファイルを、markdownのtable形式に変換して表示
+if [[ "${FORMAT}" == "tsv" ]]; then
+  echo "==> Report Preview (Markdown Table):"
+  # Convert TSV to Markdown table using awk
+  awk -F'\t' '
+    NR==1 {
+      printf "| "
+      for(i=1; i<=NF; i++) {
+        printf "%s ", $i
+        if(i<NF) printf "| "
+      }
+      print "|"
+      printf "|"
+      for(i=1; i<=NF; i++) printf " --- |"
+      print ""
+    }
+    NR>1 {
+      printf "| "
+      for(i=1; i<=NF; i++) {
+        printf "%s ", $i
+        if(i<NF) printf "| "
+      }
+      print "|"
+    }
+  ' "${OUTPUT_PATH}"
+  echo "==> End of Report Preview"
+fi
+
+
 # Check min_score if specified (only for TSV format)
 if [[ -n "${MIN_SCORE}" ]] && [[ "${FORMAT}" == "tsv" ]]; then
   echo "==> Checking scores against minimum threshold: ${MIN_SCORE}"
